@@ -12,130 +12,94 @@ In this course we will be talking about sensor fusion, whch is the process of ta
 
 **Sensor Fusion** by combing lidar's high resolution imaging with radar's ability to measure velocity of objects we can get a better understanding of the sorrounding environment than we could using one of the sensors alone.
 
-## Classroom Workspace
+# RANSAC Algorithm for Segmentation
 
-The workspace provided in the SFND classroom comes preinstallated with everything that you need to finish the exercises and projects. Versions used by Udacity for this ND are as follows:
+PCL library has preefined function called "segmentplane" for point cloud segmentation but in this project we developed this algorithm on our own intially for 2d and then later we extended it to 3d for the final project.
+
+RANSAC stands for Random Sample Consensus, and is a method for detecting outliers in data. RANSAC runs for a max number of iterations, and returns the model with the best fit. Each iteration randomly picks a subsample of the data and fits a model through it, such as a line or a plane. Then the iteration with the highest number of inliers or the lowest noise is used as the best model.
+
+![ransac](https://raw.githubusercontent.com/Ajithgit96/LiDAR-Obstacle-Detection-SFND/main/media/RANSAC.gif)
+
+One type of RANSAC version selects the smallest possible subset of points to fit. For a line, that would be two points, and for a plane three points. Then the number of inliers are counted, by iterating through every remaining point and calculating its distance to the model. The points that are within a certain distance to the model are counted as inliers. The iteration that has the highest number of inliers is then the best model. This will be the version that you will implement in this quiz.
+
+Other methods of RANSAC could sample some percentage of the model points, for example 20% of the total points, and then fit a line to that. Then the error of that line is calculated, and the iteration with the lowest error is the best model. This method might have some advantages since not every point at each iteration needs to be considered. It’s good to experiment with different approaches and time results to see what works best.
+
+# KD Tree Algorithm for clustering Point cloud
+
+Now we have segmented the points and we can recognize which ones represent obstacles for your car. It would be great to break up and group those obstacle points, especially if you want to do multiple object tracking with cars, pedestrians, and bicyclists, for instance. One way to do that grouping and cluster point cloud data is called euclidean clustering.
+
+So even for this we developed the algorithm in 2D intially and later extending it to 3d for implementing in final project.so lets divide this task in to 2 steps
+
+* Inserting points in to KD tree(2D)
+* Searching points in KD Tree(2D)
+
+# Inserting points in to KD tree(2D)
+
+A KD-Tree is a binary tree that splits points between alternating axes. By separating space by splitting regions, nearest neighbor search can be made much faster when using an algorithm like euclidean clustering.
+
+## Workflow
+
+* The points which is inserted first will become the root of the tree
+* Later inserted points will be allotted to the left if its 'x' value is lesser than root 'x' value or to the right if greater
+* when d%2 is equal to 0 x split will occur and at 1 y split will occur.Here d means the number of dimensions we are working in this case 2.
+* consecutive points will be compared starting from root and based on depth x or y will be compared and alloted to the repective position in kd tree
+
+![kdtree5](https://raw.githubusercontent.com/Ajithgit96/LiDAR-Obstacle-Detection-SFND/main/media/KDTree_workflow.png)
+
+Initial 2d points
+
+![2dpoints](https://raw.githubusercontent.com/Ajithgit96/LiDAR-Obstacle-Detection-SFND/main/media/KDTree_intial_points.png)
+
+KD tree formed
+
+![Kdtree_insert](https://github.com/Ajithgit96/LiDAR-Obstacle-Detection-SFND/blob/main/media/KDTree_formed.png?raw=true)
+
+# Searching points in KD Tree(2D)
+
+Once points are able to be inserted into the tree, the next step is being able to search for nearby points inside the tree compared to a given target point. Points within a distance of distanceTol are considered to be nearby. The KD-Tree is able to split regions and allows certain regions to be completely ruled out, speeding up the process of finding nearby neighbors.
+
+The naive approach of finding nearby neighbors is to go through every single point in the tree and compare their distances with the target, selecting point indices that fall within the distance tolerance of the target. Instead with the KD-Tree you can compare distance within a boxed square that is 2 x distanceTol for length, centered around the target point. If the current node point is within this box then you can directly calculate the distance and see if the point id should be added to the list of nearby ids. Then you see if your box crosses over the node division region and if it does compare that next node. You do this recursively, with the advantage being that if the box region is not inside some division region you completely skip that branch.
+
+![Kdtree_search](https://github.com/Ajithgit96/LiDAR-Obstacle-Detection-SFND/blob/main/media/Points_Search_KDTree.gif?raw=true)
+
+
+Results will look like this. Here the three colours indicates three clusters.
+
+<img width="286" alt="Kdtree_cluster" src="https://github.com/Ajithgit96/LiDAR-Obstacle-Detection-SFND/blob/main/media/KDTree_result.png?raw=true">
+
+# Final Project
+
+In the final project we were given the real world pcd data so the tasks/steps carried out are
+
+* Loading pcd data
+* Filtering the point cloud
+* Cropping the pcd
+* RANSAC for segmentation
+* KD tree for clustering obstacles
+* Adding Bounding boxes for the obstacles
+
+## Requirements
+
+The workspace requirements are as follows:
 
 * Ubuntu 16.04
 * PCL - v1.7.2
 * C++ v11
 * gcc v5.5
 
-**Note** The [[CMakeLists.txt](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/blob/master/CMakeLists.txt)] file provided in this repo can be used locally if you have the same package versions as mentioned above. If you want to run this project locally (outside the Udacity workspace), please follow the steps under the **Local Installation** section.
+## Installation
 
+### Linux Ubuntu 16
 
-## Local Installation
+The link here is very helpful, 
+https://larrylisky.com/2014/03/03/installing-pcl-on-ubuntu/
 
-### Ubuntu 
+A few updates to the instructions above were needed.
 
-1. Clone this github repo:
+* libvtk needed to be updated to libvtk6-dev instead of (libvtk5-dev). The linker was having trouble locating libvtk5-dev while building, but this might not be a problem for everyone.
 
-   ```sh
-   cd ~
-   git clone https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git
-   ```
-
-2.  Edit [CMakeLists.txt](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/blob/master/CMakeLists.txt) as follows:
-
-   ```cmake
-   cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-   
-   add_definitions(-std=c++14)
-   
-   set(CXX_FLAGS "-Wall")
-   set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
-   
-   project(playback)
-   
-   find_package(PCL 1.11 REQUIRED)
-   
-   include_directories(${PCL_INCLUDE_DIRS})
-   link_directories(${PCL_LIBRARY_DIRS})
-   add_definitions(${PCL_DEFINITIONS})
-   list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
-   
-   
-   add_executable (environment src/environment.cpp src/render/render.cpp src/processPointClouds.cpp)
-   target_link_libraries (environment ${PCL_LIBRARIES})
-   ```
-
-3. Execute the following commands in a terminal
-
-   ```shell
-   sudo apt install libpcl-dev
-   cd ~/SFND_Lidar_Obstacle_Detection
-   mkdir build && cd build
-   cmake ..
-   make
-   ./environment
-   ```
-
-   This should install the latest version of PCL. You should be able to do all the classroom exercises and project with this setup.
-
-### MAC
-
-#### Install via Homebrew
-1. install [homebrew](https://brew.sh/)
-2. update homebrew 
-	```bash
-	$> brew update
-	```
-3. add  homebrew science [tap](https://docs.brew.sh/Taps) 
-	```bash
-	$> brew tap brewsci/science
-	```
-4. view pcl install options
-	```bash
-	$> brew options pcl
-	```
-5. install PCL 
-	```bash
-	$> brew install pcl
-	```
-
-6. Clone this github repo
-
-   ```shell
-   cd ~
-   git clone https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git
-   ```
-
-7. Edit the CMakeLists.txt file as shown in Step 2 of Ubuntu installation instructions above.
-
-8. Execute the following commands in a terminal
-
-   ```shell
-   cd ~/SFND_Lidar_Obstacle_Detection
-   mkdir build && cd build
-   cmake ..
-   make
-   ./environment
-   ```
-
-### WINDOWS
-
-#### Install via cvpkg
-
-1. Follow the steps [here](https://pointclouds.org/downloads/) to install PCL.
-
-2. Clone this github repo
-
-   ```shell
-   cd ~
-   git clone https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git
-   ```
-
-3. Edit the CMakeLists.txt file as shown in Step 2 of Ubuntu installation instructions above.
-
-4. Execute the following commands in Powershell or Terminal
-
-   ```shell
-   cd ~/SFND_Lidar_Obstacle_Detection
-   mkdir build && cd build
-   cmake ..
-   make
-   ./environment
-   ```
+* BUILD_visualization needed to be manually turned on, this link shows you how to do that,
+http://www.pointclouds.org/documentation/tutorials/building_pcl.php
 
 #### Build from Source
 
