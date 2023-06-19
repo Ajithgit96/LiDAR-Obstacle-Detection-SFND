@@ -1,0 +1,17 @@
+Compiling and testing:
+        Yes it compiles without error.
+
+Bounding box enclose appropriate objects:
+        Yes it encloses all the vehicles.
+
+Objects detected across all frames:
+        yes and it doesnt gain or lose bounding box in the midle of stream.
+
+3D RANSAC:
+        yes i have implemented 3d ransac algorithm for segmentation.
+        i have used udacity 2d ransac solution code as reference and build my algorithm for 3d.
+
+clustering:
+        yes i have impelmented my own kdtree and euclidean clustering algorithm.
+        you can find the kdtree code in "kdtree.h" in src folder.
+        i have used udacity solution code as refrence and build my algorithm upon this for building 3d tree.

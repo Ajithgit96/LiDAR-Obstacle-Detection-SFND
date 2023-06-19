@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/saiajith/pcl_ros1_ws/devel/include/**",
+        "/home/saiajith/ZED_ws_ros1/devel/include/**",
+        "/home/saiajith/cartographer_ws_ros1/install_isolated/include/**",
+        "/home/saiajith/catkin_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/saiajith/catkin_ws/src/sitl_gazebo/include/**",
+        "/home/saiajith/pointcloud_proc_ros1ws/src/my_pcl_tutorial/include/**",
+        "/home/saiajith/pcl_ros1_ws/src/perception_pcl/pcl_conversions/include/**",
+        "/home/saiajith/pcl_ros1_ws/src/perception_pcl/pcl_ros/include/**",
+        "/home/saiajith/ZED_ws_ros1/src/zed-ros-wrapper/zed_interfaces/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
